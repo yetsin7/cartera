@@ -220,6 +220,13 @@ export default {
     budgetNearLimit: 'Has usado {{percentage}}% de tu presupuesto de {{category}}',
     info: 'El sistema te alertará cuando alcances el 90% y 100% del presupuesto establecido para cada categoría.',
   },
+  calculator: {
+    title: 'Calculadora',
+    price: 'Calcular Precio',
+    cost: 'Calcular Costo',
+    stock: 'Calcular Stock',
+    quantity: 'Calcular Cantidad',
+  },
   onboarding: {
     skip: 'Omitir',
     next: 'Siguiente',

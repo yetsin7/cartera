@@ -220,6 +220,13 @@ export default {
     budgetNearLimit: 'You have used {{percentage}}% of your {{category}} budget',
     info: 'The system will alert you when you reach 90% and 100% of the budget set for each category.',
   },
+  calculator: {
+    title: 'Calculator',
+    price: 'Calculate Price',
+    cost: 'Calculate Cost',
+    stock: 'Calculate Stock',
+    quantity: 'Calculate Quantity',
+  },
   onboarding: {
     skip: 'Skip',
     next: 'Next',

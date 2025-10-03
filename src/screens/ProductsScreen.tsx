@@ -15,6 +15,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
+import { Calculator } from '../components/Calculator';
 import { getProducts, saveProduct, deleteProduct, getSettings, sellProduct } from '../storage';
 import { Product } from '../types';
 import { formatCurrency, generateId } from '../utils/formatters';
@@ -43,6 +44,11 @@ const ProductsScreen: React.FC = () => {
   const [formCategory, setFormCategory] = useState('');
   const [sellQuantity, setSellQuantity] = useState('1');
 
+  // Calculator state
+  const [calculatorVisible, setCalculatorVisible] = useState(false);
+  const [calculatorField, setCalculatorField] = useState<'price' | 'cost' | 'stock' | 'quantity'>('price');
+  const [calculatorInitialValue, setCalculatorInitialValue] = useState('0');
+
   // Quick sale state
   const [quickSaleItems, setQuickSaleItems] = useState<QuickSaleItem[]>([]);
 
@@ -58,6 +64,29 @@ const ProductsScreen: React.FC = () => {
       loadData();
     }, [])
   );
+
+  const openCalculator = (field: 'price' | 'cost' | 'stock' | 'quantity', currentValue: string) => {
+    setCalculatorField(field);
+    setCalculatorInitialValue(currentValue || '0');
+    setCalculatorVisible(true);
+  };
+
+  const handleCalculatorConfirm = (value: string) => {
+    switch (calculatorField) {
+      case 'price':
+        setFormPrice(value);
+        break;
+      case 'cost':
+        setFormCost(value);
+        break;
+      case 'stock':
+        setFormStock(Math.floor(parseFloat(value)).toString());
+        break;
+      case 'quantity':
+        setSellQuantity(Math.floor(parseFloat(value)).toString());
+        break;
+    }
+  };
 
   const openModal = (product?: Product) => {
     if (product) {
@@ -402,29 +431,59 @@ const ProductsScreen: React.FC = () => {
                 numberOfLines={3}
               />
 
-              <Input
-                label={t('products.price')}
-                value={formPrice}
-                onChangeText={setFormPrice}
-                placeholder={t('products.enterPrice')}
-                keyboardType="decimal-pad"
-              />
+              <View style={styles.inputWithCalculator}>
+                <View style={styles.inputContainer}>
+                  <Input
+                    label={t('products.price')}
+                    value={formPrice}
+                    onChangeText={setFormPrice}
+                    placeholder={t('products.enterPrice')}
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+                <TouchableOpacity
+                  style={[styles.calculatorButton, { backgroundColor: theme.primary }]}
+                  onPress={() => openCalculator('price', formPrice)}
+                >
+                  <Ionicons name="calculator" size={20} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
 
-              <Input
-                label={`${t('products.cost')} (${t('common.optional')})`}
-                value={formCost}
-                onChangeText={setFormCost}
-                placeholder={t('products.enterCost')}
-                keyboardType="decimal-pad"
-              />
+              <View style={styles.inputWithCalculator}>
+                <View style={styles.inputContainer}>
+                  <Input
+                    label={`${t('products.cost')} (${t('common.optional')})`}
+                    value={formCost}
+                    onChangeText={setFormCost}
+                    placeholder={t('products.enterCost')}
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+                <TouchableOpacity
+                  style={[styles.calculatorButton, { backgroundColor: theme.primary }]}
+                  onPress={() => openCalculator('cost', formCost)}
+                >
+                  <Ionicons name="calculator" size={20} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
 
-              <Input
-                label={t('products.stock')}
-                value={formStock}
-                onChangeText={setFormStock}
-                placeholder={t('products.enterStock')}
-                keyboardType="number-pad"
-              />
+              <View style={styles.inputWithCalculator}>
+                <View style={styles.inputContainer}>
+                  <Input
+                    label={t('products.stock')}
+                    value={formStock}
+                    onChangeText={setFormStock}
+                    placeholder={t('products.enterStock')}
+                    keyboardType="number-pad"
+                  />
+                </View>
+                <TouchableOpacity
+                  style={[styles.calculatorButton, { backgroundColor: theme.primary }]}
+                  onPress={() => openCalculator('stock', formStock)}
+                >
+                  <Ionicons name="calculator" size={20} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
 
               <Input
                 label={`${t('products.category')} (${t('common.optional')})`}
@@ -634,6 +693,14 @@ const ProductsScreen: React.FC = () => {
           </ScrollView>
         </View>
       </Modal>
+
+      <Calculator
+        visible={calculatorVisible}
+        initialValue={calculatorInitialValue}
+        onClose={() => setCalculatorVisible(false)}
+        onConfirm={handleCalculatorConfirm}
+        title={t(`calculator.${calculatorField}`)}
+      />
     </View>
   );
 };
@@ -896,6 +963,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  inputWithCalculator: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+  },
+  inputContainer: {
+    flex: 1,
+  },
+  calculatorButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
   },
 });
 
