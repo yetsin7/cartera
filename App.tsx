@@ -3,17 +3,28 @@ import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
+import { AuthProvider, useAuth } from './src/security/AuthContext';
 import { Navigation } from './src/navigation';
+import { UnlockScreen } from './src/screens/UnlockScreen';
 import { initI18n } from './src/i18n';
 import './src/i18n';
 
 const AppContent: React.FC = () => {
   const { isDark } = useTheme();
+  const { isLocked, isSetup } = useAuth();
+
+  if (!isSetup) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <Navigation />
+      {isLocked ? <UnlockScreen /> : <Navigation />}
     </>
   );
 };
@@ -45,7 +56,9 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </ThemeProvider>
   );
 }

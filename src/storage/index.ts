@@ -145,33 +145,88 @@ export const exportData = async (): Promise<string> => {
     const transactions = await getTransactions();
     const products = await getProducts();
     const settings = await getSettings();
+    const wallets = await getWallets();
+    const goals = await getGoals();
+    const recurring = await getRecurringTransactions();
 
     return JSON.stringify({
       transactions,
       products,
       settings,
+      wallets,
+      goals,
+      recurring,
       exportDate: new Date().toISOString(),
-    });
+      version: '1.0.0',
+    }, null, 2);
   } catch (error) {
     console.error('Error exporting data:', error);
     throw error;
   }
 };
 
-export const importData = async (jsonData: string): Promise<void> => {
+export const importData = async (jsonData: string): Promise<{ success: boolean; message: string }> => {
   try {
     const data = JSON.parse(jsonData);
 
-    if (data.transactions) {
-      await AsyncStorage.setItem(KEYS.TRANSACTIONS, JSON.stringify(data.transactions));
+    // Validate data structure
+    if (!data.exportDate || !data.version) {
+      return { success: false, message: 'Invalid backup file format' };
     }
 
-    if (data.products) {
-      await AsyncStorage.setItem(KEYS.PRODUCTS, JSON.stringify(data.products));
+    let imported = 0;
+
+    // Import transactions
+    if (data.transactions && Array.isArray(data.transactions)) {
+      await AsyncStorage.setItem(KEYS.TRANSACTIONS, JSON.stringify(data.transactions));
+      imported++;
     }
+
+    // Import products
+    if (data.products && Array.isArray(data.products)) {
+      await AsyncStorage.setItem(KEYS.PRODUCTS, JSON.stringify(data.products));
+      imported++;
+    }
+
+    // Import settings (but preserve biometrics settings)
+    if (data.settings) {
+      const currentSettings = await getSettings();
+      const newSettings = {
+        ...data.settings,
+        biometricsEnabled: currentSettings.biometricsEnabled, // Preserve security settings
+      };
+      await AsyncStorage.setItem(KEYS.SETTINGS, JSON.stringify(newSettings));
+      imported++;
+    }
+
+    // Import wallets
+    if (data.wallets && Array.isArray(data.wallets)) {
+      await AsyncStorage.setItem(KEYS.WALLETS, JSON.stringify(data.wallets));
+      imported++;
+    }
+
+    // Import goals
+    if (data.goals && Array.isArray(data.goals)) {
+      await AsyncStorage.setItem(KEYS.GOALS, JSON.stringify(data.goals));
+      imported++;
+    }
+
+    // Import recurring transactions
+    if (data.recurring && Array.isArray(data.recurring)) {
+      await AsyncStorage.setItem(KEYS.RECURRING, JSON.stringify(data.recurring));
+      imported++;
+    }
+
+    return {
+      success: true,
+      message: `Successfully imported ${imported} data categories from backup created on ${new Date(data.exportDate).toLocaleDateString()}`
+    };
   } catch (error) {
     console.error('Error importing data:', error);
-    throw error;
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to import data'
+    };
   }
 };
 

@@ -52,6 +52,7 @@ export interface AppSettings {
   cloudSync: boolean;
   cloudProvider?: 'drive' | 'icloud';
   defaultWallet?: string;
+  biometricsEnabled?: boolean;
 }
 
 export interface Wallet {

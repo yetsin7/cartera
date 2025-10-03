@@ -11,11 +11,12 @@ import { getWallets, saveWallet, deleteWallet, getGoals, saveGoal, deleteGoal, a
 import { Wallet, FinancialGoal } from '../types';
 import { formatCurrency, generateId } from '../utils/formatters';
 import RecurringScreen from './RecurringScreen';
+import { BudgetScreen } from './BudgetScreen';
 
 const MoreScreen: React.FC = () => {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const [activeTab, setActiveTab] = useState<'wallets' | 'goals' | 'recurring'>('wallets');
+  const [activeTab, setActiveTab] = useState<'wallets' | 'goals' | 'recurring' | 'budgets'>('wallets');
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [goals, setGoals] = useState<FinancialGoal[]>([]);
   const [currency, setCurrency] = useState('USD');
@@ -236,6 +237,16 @@ const MoreScreen: React.FC = () => {
             {t('recurring.title')}
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'budgets' && { borderBottomColor: theme.primary }]}
+          onPress={() => setActiveTab('budgets')}
+        >
+          <Ionicons name="calculator" size={20} color={activeTab === 'budgets' ? theme.primary : theme.textSecondary} />
+          <Text style={[styles.tabText, { color: activeTab === 'budgets' ? theme.primary : theme.textSecondary }]}>
+            {t('budgets.title')}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Wallets Tab */}
@@ -331,8 +342,11 @@ const MoreScreen: React.FC = () => {
       {/* Recurring Tab */}
       {activeTab === 'recurring' && <RecurringScreen />}
 
+      {/* Budgets Tab */}
+      {activeTab === 'budgets' && <BudgetScreen />}
+
       {/* FAB */}
-      {activeTab !== 'recurring' && (
+      {activeTab !== 'recurring' && activeTab !== 'budgets' && (
         <TouchableOpacity
           style={[styles.fab, { backgroundColor: theme.primary }]}
           onPress={() => activeTab === 'wallets' ? openWalletModal() : openGoalModal()}

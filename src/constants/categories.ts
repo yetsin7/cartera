@@ -1,4 +1,14 @@
-import { Category } from '../types';
+import { Category, CategoryType } from '../types';
+
+export const EXPENSE_CATEGORIES: CategoryType[] = [
+  'food',
+  'transport',
+  'entertainment',
+  'health',
+  'shopping',
+  'services',
+  'other',
+];
 
 export const DEFAULT_CATEGORIES: Category[] = [
   // Expenses

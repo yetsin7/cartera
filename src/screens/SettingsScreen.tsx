@@ -1,26 +1,31 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, ActionSheetIOS, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, ActionSheetIOS, Platform, Modal } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeContext';
 import { Card } from '../components/Card';
 import { ListItem } from '../components/ListItem';
-import { getSettings, saveSettings, clearAllData, exportData } from '../storage';
+import { getSettings, saveSettings, clearAllData, exportData, importData } from '../storage';
 import { changeLanguage } from '../i18n';
 import { CURRENCIES } from '../constants/currencies';
 import { AppSettings } from '../types';
+import { useAuth } from '../security/AuthContext';
+import { SetupPinScreen } from './SetupPinScreen';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
+import * as DocumentPicker from 'expo-document-picker';
 
 const SettingsScreen: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { theme, themeMode, setThemeMode } = useTheme();
+  const { hasPin, hasBiometrics, enableBiometrics, removePin } = useAuth();
   const [settings, setSettings] = useState<AppSettings>({
     language: 'es',
     currency: 'USD',
     theme: 'auto',
     cloudSync: false,
   });
+  const [showPinSetup, setShowPinSetup] = useState(false);
 
   const loadSettings = async () => {
     const s = await getSettings();
@@ -198,6 +203,31 @@ const SettingsScreen: React.FC = () => {
     }
   };
 
+  const handleImportData = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/json',
+        copyToCacheDirectory: true,
+      });
+
+      if (result.assets && result.assets.length > 0) {
+        const fileUri = result.assets[0].uri;
+        const fileContent = await FileSystem.readAsStringAsync(fileUri);
+        const importResult = await importData(fileContent);
+
+        if (importResult.success) {
+          Alert.alert(t('common.success'), importResult.message);
+          await loadSettings();
+        } else {
+          Alert.alert(t('common.error'), importResult.message);
+        }
+      }
+    } catch (error) {
+      console.error('Error importing data:', error);
+      Alert.alert(t('common.error'), t('settings.importDataFailed'));
+    }
+  };
+
   const handleClearData = () => {
     // First confirmation
     Alert.alert(
@@ -269,6 +299,70 @@ const SettingsScreen: React.FC = () => {
     return currency ? `${currency.code} (${currency.symbol})` : settings.currency;
   };
 
+  const handlePinSetup = () => {
+    if (hasPin) {
+      Alert.alert(
+        t('security.removePin'),
+        t('security.removePinConfirm'),
+        [
+          { text: t('common.cancel'), style: 'cancel' },
+          {
+            text: t('common.delete'),
+            style: 'destructive',
+            onPress: () => {
+              Alert.prompt(
+                t('security.enterPin'),
+                t('security.removePinMessage'),
+                async (pin) => {
+                  const success = await removePin(pin);
+                  if (success) {
+                    Alert.alert(t('common.success'), t('security.pinRemoved'));
+                  } else {
+                    Alert.alert(t('common.error'), t('security.wrongPin'));
+                  }
+                },
+                'secure-text'
+              );
+            },
+          },
+        ]
+      );
+    } else {
+      setShowPinSetup(true);
+    }
+  };
+
+  const handleBiometricsToggle = async () => {
+    if (!hasPin) {
+      Alert.alert(
+        t('security.error'),
+        t('security.requirePin')
+      );
+      return;
+    }
+
+    if (!hasBiometrics) {
+      Alert.alert(
+        t('security.error'),
+        t('security.biometricsNotAvailable')
+      );
+      return;
+    }
+
+    try {
+      await enableBiometrics(!settings.biometricsEnabled);
+      await updateSettings({ biometricsEnabled: !settings.biometricsEnabled });
+      Alert.alert(
+        t('common.success'),
+        settings.biometricsEnabled
+          ? t('security.biometricsDisabled')
+          : t('security.biometricsEnabled')
+      );
+    } catch (error) {
+      Alert.alert(t('common.error'), t('security.biometricsFailed'));
+    }
+  };
+
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.content}>
@@ -301,6 +395,31 @@ const SettingsScreen: React.FC = () => {
 
         <Card style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
+            {t('security.title')}
+          </Text>
+
+          <ListItem
+            title={hasPin ? t('security.removePin') : t('security.createPin')}
+            icon="lock-closed"
+            iconColor={hasPin ? theme.success : theme.textSecondary}
+            onPress={handlePinSetup}
+            showChevron
+          />
+
+          {hasPin && hasBiometrics && (
+            <ListItem
+              title={t('security.enableBiometrics')}
+              icon="finger-print"
+              iconColor={theme.primary}
+              onPress={handleBiometricsToggle}
+              rightText={settings.biometricsEnabled ? 'ON' : 'OFF'}
+              showChevron
+            />
+          )}
+        </Card>
+
+        <Card style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
             {t('settings.data')}
           </Text>
 
@@ -309,6 +428,14 @@ const SettingsScreen: React.FC = () => {
             icon="cloud-upload"
             iconColor={theme.primary}
             onPress={handleExportData}
+            showChevron
+          />
+
+          <ListItem
+            title={t('settings.importData')}
+            icon="cloud-download"
+            iconColor={theme.success}
+            onPress={handleImportData}
             showChevron
           />
 
@@ -329,6 +456,14 @@ const SettingsScreen: React.FC = () => {
           <ListItem title={t('settings.version')} rightText="1.0.0" />
         </Card>
       </View>
+
+      <Modal
+        visible={showPinSetup}
+        animationType="slide"
+        presentationStyle="fullScreen"
+      >
+        <SetupPinScreen onComplete={() => setShowPinSetup(false)} />
+      </Modal>
     </ScrollView>
   );
 };
