@@ -113,6 +113,8 @@ export default {
     icloud: 'iCloud',
     about: 'About',
     version: 'Version',
+    showOnboarding: 'View onboarding tutorial',
+    onboardingReset: 'Close and reopen the app to view the tutorial',
     data: 'Data',
     exportData: 'Export data',
     importData: 'Import data',
@@ -217,6 +219,31 @@ export default {
     budgetExceeded: 'You have exceeded your {{category}} budget: {{amount}} {{currency}}',
     budgetNearLimit: 'You have used {{percentage}}% of your {{category}} budget',
     info: 'The system will alert you when you reach 90% and 100% of the budget set for each category.',
+  },
+  onboarding: {
+    skip: 'Skip',
+    next: 'Next',
+    getStarted: 'Get Started',
+    welcome: {
+      title: 'Welcome to Cartera!',
+      description: 'Manage your personal and business finances easily and securely. Everything stored locally on your device.',
+    },
+    transactions: {
+      title: 'Track Your Transactions',
+      description: 'Record income, expenses, and sales. View detailed statistics and maintain complete control of your money.',
+    },
+    products: {
+      title: 'Inventory Management',
+      description: 'Manage your product inventory, make quick sales, and keep automatic control of your stock.',
+    },
+    budgets: {
+      title: 'Smart Budgets',
+      description: 'Set spending limits by category and receive alerts when you approach or exceed your budget.',
+    },
+    security: {
+      title: 'Security & Privacy',
+      description: 'Protect your data with PIN and biometric authentication. Your data never leaves your device.',
+    },
   },
   security: {
     title: 'Security',

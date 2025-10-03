@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert, ActionSheetIOS, Platform, Modal } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeContext';
@@ -452,6 +453,21 @@ const SettingsScreen: React.FC = () => {
           <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>
             {t('settings.about')}
           </Text>
+
+          <ListItem
+            title={t('settings.showOnboarding')}
+            icon="information-circle"
+            iconColor={theme.primary}
+            onPress={async () => {
+              await AsyncStorage.removeItem('onboardingCompleted');
+              Alert.alert(
+                t('common.success'),
+                t('settings.onboardingReset'),
+                [{ text: t('common.done'), onPress: () => {} }]
+              );
+            }}
+            showChevron
+          />
 
           <ListItem title={t('settings.version')} rightText="1.0.0" />
         </Card>

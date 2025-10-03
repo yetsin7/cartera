@@ -113,6 +113,8 @@ export default {
     icloud: 'iCloud',
     about: 'Acerca de',
     version: 'Versión',
+    showOnboarding: 'Ver tutorial de inicio',
+    onboardingReset: 'Cierra y vuelve a abrir la aplicación para ver el tutorial',
     data: 'Datos',
     exportData: 'Exportar datos',
     importData: 'Importar datos',
@@ -217,6 +219,31 @@ export default {
     budgetExceeded: 'Has excedido tu presupuesto de {{category}}: {{amount}} {{currency}}',
     budgetNearLimit: 'Has usado {{percentage}}% de tu presupuesto de {{category}}',
     info: 'El sistema te alertará cuando alcances el 90% y 100% del presupuesto establecido para cada categoría.',
+  },
+  onboarding: {
+    skip: 'Omitir',
+    next: 'Siguiente',
+    getStarted: 'Comenzar',
+    welcome: {
+      title: '¡Bienvenido a Cartera!',
+      description: 'Gestiona tus finanzas personales y de negocio de forma fácil y segura. Todo almacenado localmente en tu dispositivo.',
+    },
+    transactions: {
+      title: 'Controla tus Transacciones',
+      description: 'Registra ingresos, gastos y ventas. Visualiza estadísticas detalladas y mantén un control total de tu dinero.',
+    },
+    products: {
+      title: 'Gestión de Inventario',
+      description: 'Administra tu inventario de productos, realiza ventas rápidas y mantén el control de tu stock automáticamente.',
+    },
+    budgets: {
+      title: 'Presupuestos Inteligentes',
+      description: 'Establece límites de gastos por categoría y recibe alertas cuando te acerques o superes tu presupuesto.',
+    },
+    security: {
+      title: 'Seguridad y Privacidad',
+      description: 'Protege tus datos con PIN y autenticación biométrica. Tus datos nunca salen de tu dispositivo.',
+    },
   },
   security: {
     title: 'Seguridad',
