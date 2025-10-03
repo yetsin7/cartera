@@ -1,20 +1,59 @@
+import 'react-native-gesture-handler';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
+import { Navigation } from './src/navigation';
+import { initI18n } from './src/i18n';
+import './src/i18n';
+
+const AppContent: React.FC = () => {
+  const { isDark } = useTheme();
+
+  return (
+    <>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <Navigation />
+    </>
+  );
+};
 
 export default function App() {
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await initI18n();
+      } catch (error) {
+        console.error('Error initializing app:', error);
+      } finally {
+        setIsReady(true);
+      }
+    };
+
+    init();
+  }, []);
+
+  if (!isReady) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  loading: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
 });
